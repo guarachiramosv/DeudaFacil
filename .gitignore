@@ -1,0 +1,30 @@
+# Dependencies
+**/node_modules/
+
+# Expo
+**/.expo/
+**/dist/
+**/web-build/
+**/expo-env.d.ts
+
+# Local environment files
+**/.env
+**/.env.*.local
+
+# Native build output
+/frontend/ios/
+/frontend/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Debug and generated files
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.tsbuildinfo
+.DS_Store
+.metro-health-check*

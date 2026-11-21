@@ -1,29 +1,22 @@
 # DeudaFácil
 
-Aplicación móvil pensada para ayudar a comerciantes a registrar y organizar las deudas y ventas fiadas de sus clientes. La idea contempla el registro manual y, en una etapa futura, la transcripción de deudas dictadas por voz para que el comerciante revise los datos antes de guardarlos.
+Prototipo de aplicación móvil para gestionar deudas entre comerciantes y clientes.
 
-## Estado actual
+## Estructura
 
-Este repositorio contiene únicamente la estructura inicial y la descripción del proyecto. La aplicación y sus funciones todavía no están implementadas.
+- `frontend/`: app móvil Expo + React Native, autenticación y perfil.
+- `backend/supabase/migrations/`: esquema PostgreSQL, políticas RLS y funciones SQL para el proyecto alojado en Supabase.
+- `backend/functions/`: espacio para futuras Supabase Edge Functions. La autenticación y la base de datos viven en Supabase.
 
-## Estructura propuesta
+## Ejecutar la app
 
-```text
-.
-├── assets/                         # Recursos visuales de la aplicación
-├── lib/
-│   ├── app/                        # Configuración y composición de la app
-│   └── features/
-│       └── deudas/
-│           ├── data/               # Persistencia y fuentes de datos
-│           ├── domain/             # Modelos y reglas del negocio
-│           └── presentation/       # Pantallas y componentes de deudas
-└── test/                           # Pruebas futuras
-```
+1. Abre una terminal en `frontend/`.
+2. Ejecuta `npm install` si aún no están instaladas las dependencias.
+3. Copia `.env.example` como `.env` y configura `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+4. Ejecuta `npm start` y abre el proyecto con Expo Go.
 
-La estructura sigue una organización por funcionalidad para mantener separadas la interfaz, las reglas de negocio y el acceso a datos. Se completará al iniciar el proyecto Flutter.
+## Acceso con celular
 
-## Tecnologías previstas
+El registro e inicio de sesión usan número boliviano (+591) y contraseña. En Supabase, habilita **Authentication → Sign In / Providers → Phone**. Si la confirmación telefónica está activada, también configura un proveedor de SMS (por ejemplo, Twilio); la app incluye una pantalla para ingresar el código recibido. Para una demo sin SMS se puede desactivar la confirmación telefónica, pero no se recomienda para cuentas reales porque no verifica que la persona controle ese número.
 
-- Flutter y Dart
-- `speech_to_text` para transcribir voz directamente a texto, sujeto a permisos y disponibilidad del dispositivo
+Las instrucciones de backend están en `backend/README.md`. No coloques claves `secret` o `service_role` en el frontend.
