@@ -10,6 +10,7 @@ type Props = {
   debts: PersonalDebt[];
   loading: boolean;
   loadError: string;
+  onRetry: () => void;
   onCreate: (debt: NewPersonalDebt) => Promise<void>;
   onAddEntry: (debtId: string, entry: NewPersonalDebtEntry) => Promise<void>;
 };
@@ -19,7 +20,7 @@ type FormMode = 'write' | 'voice';
 
 const colors = { ink: '#152C28', teal: '#138879', pale: '#E9F6F2', muted: '#71817B', line: '#DCE7E2', white: '#FFFFFF', red: '#A83E37' };
 
-export function PersonalDebtsScreen({ debts, loading, loadError, onCreate, onAddEntry }: Props) {
+export function PersonalDebtsScreen({ debts, loading, loadError, onRetry, onCreate, onAddEntry }: Props) {
   const [page, setPage] = useState<Page>('list');
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
   const [person, setPerson] = useState('');
@@ -172,7 +173,7 @@ export function PersonalDebtsScreen({ debts, loading, loadError, onCreate, onAdd
         setPage('detail');
       }
       clearForm();
-      setSuccess(page === 'create' ? 'Deuda personal guardada en este dispositivo.' : 'Abono guardado con su fecha y hora.');
+      setSuccess(page === 'create' ? 'Deuda personal guardada en tu cuenta.' : 'Abono guardado con su fecha y hora.');
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudo guardar. Intenta nuevamente.');
     } finally {
@@ -199,9 +200,9 @@ export function PersonalDebtsScreen({ debts, loading, loadError, onCreate, onAdd
             <MaterialCommunityIcons name="plus" size={30} color={colors.white} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.localNote}>Guardado en este dispositivo · puedes agregar abonos en cada deuda</Text>
+        <Text style={styles.localNote}>Guardado en tu cuenta · se sincroniza entre tus dispositivos</Text>
         {loading ? <View style={styles.loading}><ActivityIndicator color={colors.teal} /><Text style={styles.muted}>Cargando tus deudas…</Text></View> : null}
-        {loadError ? <Message tone="error" text={loadError} /> : null}
+        {loadError ? <><Message tone="error" text={loadError} /><SmallButton title="Reintentar" onPress={onRetry} secondary /></> : null}
         {error ? <Message tone="error" text={error} /> : null}
         {success ? <Message tone="success" text={success} /> : null}
         {!loading && debts.length === 0 ? <EmptyState title="Aún no tienes deudas" text="Toca + para registrar a quién debes o quién te debe." /> : null}
@@ -228,13 +229,13 @@ export function PersonalDebtsScreen({ debts, loading, loadError, onCreate, onAdd
 
   if (page === 'detail') {
     if (!selectedDebt) {
-      return <View><SmallButton title="Volver a Mis deudas" onPress={backToList} /><EmptyState title="No se encontró el registro" text="Vuelve a Mis deudas y selecciona un registro existente." /></View>;
+      return <View><BackIconButton label="Volver a Mis deudas" onPress={backToList} /><EmptyState title="No se encontró el registro" text="Vuelve a Mis deudas y selecciona un registro existente." /></View>;
     }
     const paid = Number(selectedDebt.initialAmount) - balance;
     const entryLabel = selectedDebt.direction === 'yo_debo' ? 'Pagué a cuenta' : 'Me pagó a cuenta';
     return (
       <View>
-        <SmallButton title="Volver a Mis deudas" onPress={backToList} secondary />
+        <BackIconButton label="Volver a Mis deudas" onPress={backToList} />
         <View style={styles.detailCard}>
           <View style={styles.between}>
             <Text style={styles.title}>{selectedDebt.person}</Text>
@@ -274,7 +275,7 @@ export function PersonalDebtsScreen({ debts, loading, loadError, onCreate, onAdd
 
   return (
     <View>
-      <SmallButton title={creatingDebt ? 'Volver a Mis deudas' : 'Volver al detalle'} onPress={() => setPage(creatingDebt ? 'list' : 'detail')} secondary />
+      <BackIconButton label={creatingDebt ? 'Volver a Mis deudas' : 'Volver al detalle'} onPress={() => setPage(creatingDebt ? 'list' : 'detail')} />
       <Text style={styles.title}>{pageTitle}</Text>
       <Text style={styles.muted}>{creatingDebt ? 'Indica quién debe y registra el monto inicial.' : `Disponible: ${money(balance)} · la fecha y hora se guardan automáticamente.`}</Text>
       <View style={styles.formCard}>
@@ -348,6 +349,14 @@ function SmallButton({ title, onPress, secondary = false }: { title: string; onP
   return <TouchableOpacity style={[styles.smallButton, secondary && styles.smallButtonSecondary]} onPress={onPress}><Text style={[styles.smallButtonText, secondary && styles.smallButtonTextSecondary]}>{title}</Text></TouchableOpacity>;
 }
 
+function BackIconButton({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.backIconButton} onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
+      <MaterialCommunityIcons name="arrow-left" size={23} color={colors.ink} />
+    </TouchableOpacity>
+  );
+}
+
 function AmountStat({ label, value, emphasized = false }: { label: string; value: string; emphasized?: boolean }) {
   return <View style={styles.amountStat}><Text style={styles.muted}>{label}</Text><Text style={[styles.statAmount, emphasized && styles.emphasizedAmount]}>{value}</Text></View>;
 }
@@ -386,6 +395,7 @@ function formatDateTime(value: string): string {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   headingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 7, marginBottom: 13 },
+  backIconButton: { width: 42, height: 42, borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   addButton: { width: 52, height: 52, borderRadius: 18, backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center', elevation: 3 },
   title: { color: colors.ink, fontSize: 23, fontWeight: '800', marginTop: 12 },
   sectionTitle: { color: colors.ink, fontSize: 19, fontWeight: '800', marginTop: 16, marginBottom: 8 },

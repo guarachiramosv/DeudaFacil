@@ -16,7 +16,7 @@
     },
     "android": {
       "package": "com.vaniag.deudafacilapp",
-      "versionCode": 6,
+      "versionCode": 15,
       "adaptiveIcon": {
         "backgroundColor": "#107D70",
         "foregroundImage": "./assets/deudafacil-logo.png",

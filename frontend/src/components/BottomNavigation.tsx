@@ -1,11 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type MainTab = 'deudas' | 'registros' | 'pasanaku' | 'perfil';
 
 const items = [
   { key: 'deudas', label: 'Mis deudas', icon: 'book-open-outline' },
-  { key: 'registros', label: 'Registros', icon: 'plus-box-outline' },
+  { key: 'registros', label: 'Compartido', icon: 'plus-box-outline' },
   { key: 'pasanaku', label: 'Pasanaku', icon: 'account-group-outline' },
   { key: 'perfil', label: 'Perfil', icon: 'account-circle-outline' },
 ] as const;
@@ -14,8 +15,9 @@ type Props = { selected: MainTab; onSelect: (tab: MainTab) => void };
 
 export function BottomNavigation({ selected, onSelect }: Props) {
   return (
-    <View style={styles.container} accessibilityRole="tablist">
-      {items.map(item => {
+    <SafeAreaView edges={['bottom']} style={styles.safeContainer}>
+      <View style={styles.container} accessibilityRole="tablist">
+        {items.map(item => {
         const isSelected = selected === item.key;
         const color = isSelected ? styles.selected.color : styles.inactive.color;
         return (
@@ -31,12 +33,14 @@ export function BottomNavigation({ selected, onSelect }: Props) {
             <Text numberOfLines={1} style={[styles.label, isSelected ? styles.selected : styles.inactive]}>{item.label}</Text>
           </TouchableOpacity>
         );
-      })}
-    </View>
+        })}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeContainer: { backgroundColor: '#FFFFFF' },
   container: {
     minHeight: 64,
     flexDirection: 'row',

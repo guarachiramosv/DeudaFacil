@@ -67,21 +67,36 @@ export async function apiRequest<T>(session: Session, path: string, options: Req
     throw new ApiError(`No se pudo conectar con la API (${API_URL}). Revisa la URL y la red.`);
   }
 
-  let payload: ApiEnvelope<T> | { error?: string; codigo?: string } | undefined;
-  try {
-    payload = await response.json();
-  } catch {
-    throw new ApiError('La API devolvió una respuesta que no se pudo leer.', response.status);
-  }
-
   if (response.status === 401) {
     throw new ApiError('Tu sesión venció. Inicia sesión nuevamente.', 401);
   }
+
+  const payload = await readResponsePayload<T>(response);
   if (!response.ok) {
     const error = payload as { error?: string; codigo?: string };
     throw new ApiError(error.error || `La API respondió ${response.status}.`, response.status, error.codigo);
   }
   return (payload as ApiEnvelope<T>).data;
+}
+
+async function readResponsePayload<T>(response: Response): Promise<ApiEnvelope<T> | { error?: string; codigo?: string }> {
+  const raw = await response.text();
+  if (!raw.trim()) {
+    throw new ApiError(`La API respondió sin contenido (HTTP ${response.status}). Comprueba que el backend esté actualizado.`, response.status);
+  }
+  try {
+    return JSON.parse(raw) as ApiEnvelope<T> | { error?: string; codigo?: string };
+  } catch {
+    const body = raw.toLowerCase();
+    if (body.includes('err_ngrok_3200') || body.includes('endpoint is offline')) {
+      throw new ApiError('El túnel de conexión está apagado. Inicia el backend y ngrok en la computadora.', response.status);
+    }
+    if (body.includes('err_ngrok_6024') || body.includes('visit this website')) {
+      throw new ApiError('ngrok devolvió su página de aviso en lugar de la API. Actualiza el APK y vuelve a intentar.', response.status);
+    }
+    const contentType = response.headers.get('content-type') ?? 'tipo de contenido desconocido';
+    throw new ApiError(`La API respondió ${response.status} con ${contentType}, no con JSON. Revisa que el backend esté activo y que el APK use la URL correcta.`, response.status);
+  }
 }
 
 export async function checkApiHealth(): Promise<boolean> {

@@ -44,11 +44,6 @@ export async function loadPersonalDebts(userId: string): Promise<PersonalDebt[]>
   return parsed.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
-export async function savePersonalDebts(userId: string, debts: PersonalDebt[]): Promise<void> {
-  if (!debts.every(isPersonalDebt)) throw new Error('No se guardó el registro porque contiene datos inválidos.');
-  await AsyncStorage.setItem(storageKey(userId), JSON.stringify(debts));
-}
-
 function isPersonalDebt(value: unknown): value is PersonalDebt {
   if (!value || typeof value !== 'object') return false;
   const debt = value as Partial<PersonalDebt>;
